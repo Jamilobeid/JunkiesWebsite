@@ -125,13 +125,15 @@ function App() {
         <Menu categories={categories} loading={loading} error={error} addToCart={addToCart} />
       )}
       {page === 'cart' && (
-        <Cart
-          cart={cart}
-          total={cartTotal}
-          updateQuantity={updateQuantity}
-          removeItem={removeItem}
-          navigate={navigate}
-        />
+        <main className="cart-page">
+          <Cart
+            cart={cart}
+            total={cartTotal}
+            updateQuantity={updateQuantity}
+            removeItem={removeItem}
+            navigate={navigate}
+          />
+        </main>
       )}
       {page === 'checkout' && (
         <Checkout
@@ -145,36 +147,57 @@ function App() {
         />
       )}
       {page === 'auth' && <Auth onAuth={handleAuth} />}
+      {page === 'rewards' && <Rewards navigate={navigate} />}
       {page === 'profile' && <Profile user={user} token={token} navigate={navigate} />}
-      <Footer />
+      <Footer navigate={navigate} />
     </div>
   )
 }
 
 function Header({ page, navigate, cartCount, user, logout }) {
+  const navItems = [
+    { key: 'home', label: 'Home' },
+    { key: 'menu', label: 'Menu' },
+    { key: 'rewards', label: 'Rewards' },
+  ]
+
   return (
     <header className="site-header">
       <button className="brand" onClick={() => navigate('home')} type="button" aria-label="Junkies home">
         <span className="brand-mark">J</span>
-        <span>Junkies</span>
+        <span className="brand-name">Junkies</span>
       </button>
-      <nav>
-        {['home', 'menu', 'cart'].map((item) => (
-          <button className={page === item ? 'active' : ''} key={item} onClick={() => navigate(item)} type="button">
-            {item === 'cart' ? `Cart (${cartCount})` : item}
+      <nav aria-label="Main navigation">
+        {navItems.filter((item) => !item.authOnly || user).map((item) => (
+          <button className={page === item.key ? 'active' : ''} key={item.key} onClick={() => navigate(item.key)} type="button">
+            {item.label}
           </button>
         ))}
+      </nav>
+      <div className="header-actions">
+        <button className="location-nav" onClick={() => navigate('home')} type="button">
+          <span className="pin-icon" aria-hidden="true"></span>
+          Halba / Andaket
+        </button>
         {user ? (
           <>
-            <button className={page === 'profile' ? 'active' : ''} onClick={() => navigate('profile')} type="button">
+            <button className={`profile-nav ${page === 'profile' ? 'active' : ''}`} onClick={() => navigate('profile')} type="button">
+              <span className="user-icon" aria-hidden="true"></span>
               Profile
             </button>
-            <button onClick={logout} type="button">Log out</button>
+            <button className="logout-nav" onClick={logout} type="button">Log out</button>
           </>
         ) : (
-          <button className="nav-cta" onClick={() => navigate('auth')} type="button">Log in</button>
+          <button className="nav-cta" onClick={() => navigate('auth')} type="button">
+            <span className="user-icon" aria-hidden="true"></span>
+            Sign in / Join
+          </button>
         )}
-      </nav>
+        <button className={`cart-nav ${page === 'cart' ? 'active' : ''}`} onClick={() => navigate('cart')} type="button" aria-label={`Cart with ${cartCount} items`}>
+          <span className="bag-icon" aria-hidden="true"></span>
+          <strong>{cartCount}</strong>
+        </button>
+      </div>
     </header>
   )
 }
@@ -215,15 +238,11 @@ function Home({ navigate }) {
             <button className="secondary" onClick={() => navigate('checkout')} type="button">Order Now</button>
           </div>
         </div>
-        <div className="burger-plate" aria-label="Fast food illustration">
-          <div className="burger">
-            <span className="bun top"></span>
-            <span className="cheese"></span>
-            <span className="patty"></span>
-            <span className="bun bottom"></span>
-          </div>
-          <div className="fries">
-            <span></span><span></span><span></span><span></span>
+        <div className="hero-photo-wrap" aria-label="Junkies burger">
+          <img src="/images/junkies-cropped-labeled-burger.png" alt="Labeled Junkies burger" />
+          <div className="hero-photo-badge">
+            <span>Signature</span>
+            <strong>Royal Stack</strong>
           </div>
         </div>
       </section>
@@ -242,7 +261,7 @@ function Home({ navigate }) {
           <article className="hero-seller">
             <img src={bestSellers[0].image} alt={bestSellers[0].name} />
             <div>
-              <p className="eyebrow badge-eyebrow">Customer favorite</p>
+              <p className="eyebrow">Customer favorite</p>
               <h3>{bestSellers[0].name}</h3>
               <p>{bestSellers[0].text}</p>
             </div>
@@ -254,7 +273,6 @@ function Home({ navigate }) {
                 <div>
                   <h3>{item.name}</h3>
                   <p>{item.text}</p>
-                  <strong>{item.price}</strong>
                 </div>
               </article>
             ))}
@@ -266,14 +284,21 @@ function Home({ navigate }) {
           <p className="eyebrow">About Junkies</p>
           <h2>Built for cravings, finished with attitude.</h2>
         </div>
-        <p>
-          Junkies is a fast-food kitchen for people who like their burgers stacked, their fries loaded, and their sauces bold. Everything is homemade, authentic, and prepared with the kind of care that makes comfort food feel personal. From boneless chicken and broasted plates to beef burgers, wraps, sauces, and dessert cups, the menu is generous, modern, and unmistakably Junkies.
-        </p>
+        <div className="about-story">
+          <p>
+            Junkies is a fast-food kitchen for people who like their burgers stacked, their fries loaded, and their sauces bold. Everything is homemade, authentic, and prepared with the kind of care that makes comfort food feel personal. From boneless chicken and broasted plates to beef burgers, wraps, sauces, and dessert cups, the menu is generous, modern, and unmistakably Junkies.
+          </p>
+          <div className="about-photo-row">
+            <img src="/images/junkies-cropped-labeled-burger.png" alt="Junkies labeled burger" />
+            <img src="/images/junkies-cropped-floating-burger.png" alt="Junkies floating burger stack" />
+          </div>
+        </div>
       </section>
       <section className="home-section socials-section">
         <div>
           <p className="eyebrow">Stay connected</p>
           <h2>Follow the drops, deals, and new cravings.</h2>
+          <img className="socials-feature-image" src="/images/junkies-cropped-chicken-dip.png" alt="Junkies crispy chicken dipped in sauce" />
         </div>
         <div className="social-links">
           <a href="https://www.instagram.com/junkiesboneless.lb" target="_blank" rel="noreferrer">
@@ -289,8 +314,52 @@ function Home({ navigate }) {
             <span>TikTok</span>
           </a>
         </div>
+        <a className="whatsapp-contact" href="https://wa.me/96181730770" target="_blank" rel="noreferrer">
+          <span>Or contact us through WhatsApp</span>
+          <SocialIcon type="whatsapp" />
+        </a>
+      </section>
+      <div className="section-divider" aria-hidden="true"></div>
+      <section className="home-section rewards-promo">
+        <div className="rewards-media">
+          <img src="https://images.unsplash.com/photo-1541592106381-b31e9677c0e5?auto=format&fit=crop&w=1400&q=80" alt="Junkies delivery order with fries and burgers" />
+          <div className="rewards-media-badge">
+            <span>J</span>
+            <strong>Earn Junkies Points</strong>
+          </div>
+        </div>
+        <div className="rewards-copy">
+          <p className="eyebrow">Junkies Rewards</p>
+          <h2>Order food. Earn points. Get rewarded.</h2>
+          <p>
+            Every registered order earns points based on what you spend. Save them up, redeem a discount, and turn your next burger, wrap, or loaded fries order into a better deal.
+          </p>
+          <button className="secondary outline-button" onClick={() => navigate('rewards')} type="button">How Points Work</button>
+        </div>
       </section>
     </>
+  )
+}
+
+function Rewards({ navigate }) {
+  return (
+    <main className="page-shell rewards-page">
+      <section className="rewards-detail">
+        <div>
+          <p className="eyebrow">Junkies Rewards</p>
+          <h2>Points that turn cravings into discounts.</h2>
+          <p>
+            Create an account, place an order, and your points are saved automatically. You can see your points balance in your profile and choose to redeem points during checkout.
+          </p>
+          <button className="primary" onClick={() => navigate('auth')} type="button">Join Rewards</button>
+        </div>
+        <div className="rewards-rules">
+          <article><strong>1 point</strong><span>for every 100,000 L.L. spent</span></article>
+          <article><strong>100 points</strong><span>gets you 500,000 L.L. discount</span></article>
+          <article><strong>Profile</strong><span>tracks orders, points earned, and points used</span></article>
+        </div>
+      </section>
+    </main>
   )
 }
 
@@ -491,22 +560,54 @@ function Auth({ onAuth }) {
   }
 
   return (
-    <main className="page-shell auth-shell">
+    <main className="auth-shell">
       <form className="auth-card" onSubmit={submit}>
-        <div className="auth-intro">
-          <p className="eyebrow">Junkies Club</p>
-          <h2>Come hungry. Leave rewarded.</h2>
-          <p>Log in to collect points, reorder faster, and keep every craving in one place.</p>
-        </div>
-        <div className="tabs">
-          <button className={mode === 'login' ? 'selected' : ''} onClick={() => setMode('login')} type="button">Login</button>
-          <button className={mode === 'register' ? 'selected' : ''} onClick={() => setMode('register')} type="button">Register</button>
-        </div>
-        {mode === 'register' && <input required placeholder="Full name" value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />}
-        <input required type="email" placeholder="Email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-        <input required type="password" minLength="6" placeholder="Password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-        <button className="primary" type="submit">{mode === 'login' ? 'Log In' : 'Create Account'}</button>
+        <div className="auth-logo">J</div>
+        <h1 className="auth-title">{mode === 'login' ? 'Sign In' : 'Create Account'}</h1>
+        {mode === 'register' && (
+          <label className="auth-field">
+            <span>Full name</span>
+            <input required value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} />
+          </label>
+        )}
+        <label className="auth-field">
+          <span>Email</span>
+          <input required type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+        </label>
+        <label className="auth-field">
+          <span>Password</span>
+          <input required type="password" minLength="6" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+        </label>
+        {mode === 'login' && (
+          <div className="auth-row">
+            <label className="remember-check">
+              <input type="checkbox" defaultChecked />
+              <span>Remember me</span>
+            </label>
+            <button className="forgot-link" type="button">Forgot Password?</button>
+          </div>
+        )}
+        <p className="auth-terms">
+          By {mode === 'login' ? 'signing in' : 'creating an account'}, I agree to Junkies&apos; <span>Privacy Policy</span>,{' '}
+          <span>Terms of Use</span>, and to earning rewards points with every order.
+        </p>
+        <button className="auth-submit" type="submit">{mode === 'login' ? 'Sign In' : 'Create Account'}</button>
         {message && <p className="status error">{message}</p>}
+        <div className="auth-divider" />
+        <div className="auth-switch">
+          <h2>{mode === 'login' ? 'Not a member?' : 'Already a member?'}</h2>
+          <p>{mode === 'login' ? 'Join rewards. Get rewarded.' : 'Sign in. Keep earning.'}</p>
+          <button
+            className="outline-auth"
+            type="button"
+            onClick={() => {
+              setMessage('')
+              setMode(mode === 'login' ? 'register' : 'login')
+            }}
+          >
+            {mode === 'login' ? 'Create an account' : 'Sign in'}
+          </button>
+        </div>
       </form>
     </main>
   )
@@ -527,6 +628,14 @@ function SocialIcon({ type }) {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M14 8.5h2V5h-2.8C10.7 5 9 6.8 9 9.4V12H7v3.4h2V21h3.8v-5.6h2.8l.5-3.4h-3.3V9.8c0-.8.4-1.3 1.2-1.3Z"></path>
+      </svg>
+    )
+  }
+
+  if (type === 'whatsapp') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 4.2a7.8 7.8 0 0 0-6.7 11.8L4.4 20l4.1-1a7.8 7.8 0 1 0 3.5-14.8Zm4.4 11.3c-.2.5-1.1 1-1.6 1.1-.4.1-1 .2-3.1-.7-2.6-1.1-4.3-3.8-4.4-4-.1-.2-1-1.4-1-2.6s.6-1.8.9-2.1c.2-.2.5-.3.7-.3h.5c.2 0 .4 0 .6.5.2.5.7 1.7.8 1.8.1.2.1.4 0 .6-.2.3-.3.4-.5.6-.2.2-.3.4-.1.7.2.4.8 1.3 1.7 2 .1.1 1.2.9 2.2 1.2.3.1.5.1.7-.1.2-.2.8-.9 1-1.2.2-.3.4-.2.7-.1.3.1 1.8.9 2.1 1 .3.2.5.2.6.4.1.1.1.7-.1 1.2Z"></path>
       </svg>
     )
   }
@@ -589,24 +698,48 @@ function Profile({ user, token, navigate }) {
   )
 }
 
-function Footer() {
+function Footer({ navigate }) {
   return (
     <footer>
-      <div className="footer-brand">
-        <span className="brand-mark">J</span>
+      <div className="footer-topline"></div>
+      <div className="footer-hero">
         <div>
-          <strong>Junkies Boneless</strong>
-          <span>For the love of junk food</span>
+          <p className="footer-kicker">Junkies</p>
+          <h2>Feed your junk-food appetite</h2>
+          <p>Order burgers, boneless bites, loaded fries, wraps, and rewards from your favorite local fast-food kitchen.</p>
+          <div className="footer-actions">
+            <a href="https://wa.me/96181730770" target="_blank" rel="noreferrer">WhatsApp Halba</a>
+            <a href="https://wa.me/96181233824" target="_blank" rel="noreferrer">WhatsApp Andaket</a>
+          </div>
+        </div>
+        <div className="footer-socials">
+          <a href="https://www.facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook"><SocialIcon type="facebook" /></a>
+          <a href="https://www.instagram.com/junkiesboneless.lb" target="_blank" rel="noreferrer" aria-label="Instagram"><SocialIcon type="instagram" /></a>
+          <a href="https://www.tiktok.com" target="_blank" rel="noreferrer" aria-label="TikTok"><SocialIcon type="tiktok" /></a>
+          <a href="https://wa.me/96181730770" target="_blank" rel="noreferrer" aria-label="WhatsApp"><SocialIcon type="whatsapp" /></a>
         </div>
       </div>
-      <div>
-        <strong>Branches</strong>
-        <span>Halba and Andaket</span>
+      <div className="footer-links">
+        <div className="footer-link-group">
+          <strong>Quick Links</strong>
+          <button type="button" onClick={() => navigate('home')}>Home</button>
+          <button type="button" onClick={() => navigate('menu')}>Menu</button>
+        </div>
+        <div className="footer-link-group footer-info-group">
+          <strong>Branches</strong>
+          <span>Halba - open 12:00 PM to 1:00 AM</span>
+          <span>Andaket - open 12:00 PM to 1:00 AM</span>
+        </div>
+        <div className="footer-link-group footer-info-group">
+          <strong>Call Us</strong>
+          <span>Halba: +961 81 730 770</span>
+          <span>Andaket: +961 81 233 824</span>
+        </div>
       </div>
-      <div>
-        <strong>Call us</strong>
-        <span>Halba: +961 81 730 770</span>
-        <span>Andaket: +961 81 233 824</span>
+      <div className="footer-bottom">
+        <span>© Junkies 2026</span>
+        <span>Privacy Policy</span>
+        <span>Terms & Conditions</span>
       </div>
     </footer>
   )
