@@ -1,0 +1,15 @@
+frontend/node_modules/
+frontend/dist/
+
+backend/bin/
+backend/obj/
+
+*.mdf
+*.ldf
+*.db
+*.sqlite
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
